@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Auto Final</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+</head>
+<body style="margin: 0; overflow: hidden; background-color: #000;">
+
+    <a-scene 
+        webxr="requiredFeatures: hit-test, local-floor;"
+        renderer="colorManagement: true; exposure: 1.5;"
+        ar-hit-test="target: #contenedor-auto;">
+        
+        <a-assets>
+            <a-asset-item id="auto" src="https://ideasrenova.com/inter/ivan/model.glb"></a-asset-item>
+        </a-assets>
+
+        <a-entity id="reticle" position="0 0 -1">
+            <a-ring rotation="-90 0 0" radius-inner="0.05" radius-outer="0.07" color="#00ff00"></a-ring>
+        </a-entity>
+
+        <a-entity id="contenedor-auto" visible="false" scale="0.2 0.2 0.2">
+            <a-entity 
+                gltf-model="#auto"
+                rotation="0 180 0">
+            </a-entity>
+        </a-entity>
+
+        <a-entity light="type: ambient; intensity: 1.5;"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2; position: 1 4 3"></a-entity>
+        <a-entity light="type: hemisphere; intensity: 1; groundColor: #666; color: #fff"></a-entity>
+
+        <a-camera position="0 1.6 0"></a-camera>
+    </a-scene>
+
+    <script>
+        const scene = document.querySelector('a-scene');
+        const reticle = document.getElementById('reticle');
+        const model = document.getElementById('contenedor-auto');
+
+        // Escuchar el evento de selección (toque en pantalla)
+        scene.addEventListener('select', (event) => {
+            if (scene.is('ar-mode')) {
+                // Obtenemos la posición del retículo en ese momento
+                const pose = event.frame.getHitTestResults(event.inputSource)[0]?.getPose(event.referenceSpace);
+                
+                if (pose) {
+                    model.setAttribute('visible', 'true');
+                    model.setAttribute('position', pose.transform.position);
+                }
+            }
+        });
+
+        // Hacer que el retículo sea visible solo en AR
+        scene.addEventListener('enter-vr', () => {
+            if (!scene.is('ar-mode')) return;
+            reticle.setAttribute('visible', 'true');
+        });
+    </script>
+</body>
+</html>
